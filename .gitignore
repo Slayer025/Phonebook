@@ -12,3 +12,6 @@ packages/
 
 # Logs
 *.log
+
+# AI assistant instructions (kept locally, not published)
+CLAUDE.md
