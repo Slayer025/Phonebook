@@ -1,0 +1,14 @@
+# Build output
+bin/
+obj/
+
+# NuGet restored packages (regenerate via `nuget restore`)
+packages/
+
+# Visual Studio / VS Code user-specific
+*.user
+*.suo
+.vs/
+
+# Logs
+*.log

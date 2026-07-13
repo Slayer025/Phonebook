@@ -1,0 +1,114 @@
+@model PhonebookApp.Models.PagedResult<PhonebookApp.Models.Contact>
+@using System.Linq
+
+@{
+    ViewBag.Title = "Contacts";
+    string searchTerm = Context.Request.QueryString["searchTerm"];
+    string encodedSearchTerm = Server.UrlEncode(searchTerm ?? string.Empty);
+}
+
+<h2>Contacts</h2>
+
+<form method="get" action="@Url.Action("Index", "Home")" class="form-inline" style="margin-bottom: 15px;">
+    <div class="form-group">
+        <input type="text" name="searchTerm" value="@searchTerm" class="form-control" placeholder="Search by name or phone..." />
+    </div>
+    <button type="submit" class="btn btn-default">Search</button>
+    @Html.ActionLink("Add New Contact", "Create", null, new { @class = "btn btn-primary pull-right" })
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Phone Number</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Items == null || !Model.Items.Any())
+        {
+            <tr><td colspan="6">No contacts found.</td></tr>
+        }
+        else
+        {
+            foreach (var contact in Model.Items)
+            {
+                <tr>
+                    <td>@contact.Id</td>
+                    <td>@contact.Name</td>
+                    <td>@contact.PhoneNumber</td>
+                    <td>@contact.Email</td>
+                    <td>@contact.Address</td>
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", new { id = contact.Id }, new { @class = "btn btn-sm btn-primary" })
+                        <button type="button" class="btn btn-sm btn-danger btn-delete" data-id="@contact.Id">Delete</button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<ul class="pagination">
+    <li class="@(Model.CurrentPage == 1 ? "disabled" : "")">
+        @if (Model.CurrentPage == 1)
+        {
+            <span>Previous</span>
+        }
+        else
+        {
+            <a href="@Url.Action("Index", "Home", new { page = Model.CurrentPage - 1, searchTerm = searchTerm })">Previous</a>
+        }
+    </li>
+
+    @for (int i = 1; i <= Model.TotalPages; i++)
+    {
+        <li class="@(i == Model.CurrentPage ? "active" : "")">
+            <a href="@Url.Action("Index", "Home", new { page = i, searchTerm = searchTerm })">@i</a>
+        </li>
+    }
+
+    <li class="@(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+        @if (Model.CurrentPage >= Model.TotalPages)
+        {
+            <span>Next</span>
+        }
+        else
+        {
+            <a href="@Url.Action("Index", "Home", new { page = Model.CurrentPage + 1, searchTerm = searchTerm })">Next</a>
+        }
+    </li>
+</ul>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            $('.btn-delete').on('click', function () {
+                var id = $(this).data('id');
+                var row = $(this).closest('tr');
+
+                if (confirm('Are you sure you want to delete this contact?')) {
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Home")',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                row.fadeOut(500, function () { $(this).remove(); });
+                            } else {
+                                alert('Error deleting contact: ' + response.message);
+                            }
+                        },
+                        error: function () {
+                            alert('An error occurred while trying to delete the contact.');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

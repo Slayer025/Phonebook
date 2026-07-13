@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // NOTE: IIS Express is installed to a custom D: drive location (C: drive is full),
+            // not the default "C:\Program Files\IIS Express\" path.
+            "name": "IIS Express: Launch PhonebookApp",
+            "type": "clr",
+            "request": "launch",
+            "program": "D:\\IIS Express\\iisexpress.exe",
+            "args": [
+                "/path:${workspaceFolder}",
+                "/port:8080",
+                "/systray:false"
+            ],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build with MSBuild",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+    ]
+}

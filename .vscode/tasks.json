@@ -1,0 +1,64 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            // NOTE: -PackagesDirectory is required here: nuget's internal MSBuild project-parsing pass
+            // doesn't know about our VSToolsPath override, so it fails to resolve Microsoft.WebApplication.targets
+            // and can't auto-detect the packages folder from the project. Passing it explicitly avoids that.
+            "label": "Restore NuGet Packages",
+            "type": "shell",
+            "command": "nuget",
+            "args": [
+                "restore",
+                "${workspaceFolder}\\PhonebookApp.csproj",
+                "-PackagesDirectory",
+                "${workspaceFolder}\\packages"
+            ],
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            // NOTE: This machine has no .NET Framework 4.5 Developer/Targeting Pack installed
+            // (the official installer link is broken), so we pull the reference assemblies from
+            // Microsoft's NuGet package instead of a system-wide install. This keeps the project
+            // strictly targeted at v4.5 without touching "C:\Program Files (x86)\...".
+            "label": "Install NET45 Reference Assemblies",
+            "type": "shell",
+            "command": "nuget",
+            "args": [
+                "install",
+                "Microsoft.NETFramework.ReferenceAssemblies.net45",
+                "-OutputDirectory",
+                "${workspaceFolder}\\packages"
+            ],
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            // NOTE: Adjust this path to match your local MSBuild install location.
+            // If MSBuild is already on your PATH, you can replace "command" with just "MSBuild.exe".
+            // VSToolsPath must point at the parent folder containing "WebApplications\Microsoft.WebApplication.targets".
+            // FrameworkPathOverride points at the NuGet-restored v4.5 reference assemblies (see the
+            // "Install NET45 Reference Assemblies" task) — adjust the version segment
+            // (currently 1.0.3) if `nuget install` later pulls a newer package version.
+            "label": "Build with MSBuild",
+            "type": "shell",
+            "command": "D:\\BuildTools\\MSBuild\\Current\\Bin\\MSBuild.exe",
+            "args": [
+                "${workspaceFolder}\\PhonebookApp.csproj",
+                "/p:Configuration=Debug",
+                "/p:VSToolsPath=D:\\BuildTools\\MSBuild\\Microsoft\\VisualStudio\\v18.0",
+                "/p:FrameworkPathOverride=${workspaceFolder}\\packages\\Microsoft.NETFramework.ReferenceAssemblies.net45.1.0.3\\build\\.NETFramework\\v4.5",
+                "/t:Build",
+                "/v:minimal"
+            ],
+            "problemMatcher": ["$msCompile"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["Restore NuGet Packages", "Install NET45 Reference Assemblies"],
+            "dependsOrder": "sequence"
+        }
+    ]
+}
